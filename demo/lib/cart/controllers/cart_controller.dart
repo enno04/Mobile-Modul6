@@ -1,3 +1,4 @@
+import 'package:demo/data/services/notification_service.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -74,18 +75,35 @@ class CartController extends GetxController {
         return;
       }
 
-      final data = {
-        'user_id': user.id,
-        'total_price': totalPrice,
-        'status': 'pending',
-        'notes': null,
-        'items': cartItems.toList(), // akan masuk ke jsonb
-      };
+      // 1️⃣ INSERT ORDER
+      final order = await Supabase.instance.client
+          .from('orders')
+          .insert({
+            'user_id': user.id,
+            'total_price': totalPrice,
+            'status': 'pending',
+            'items': cartItems.toList(),
+          })
+          .select()
+          .single();
 
-      await Supabase.instance.client.from('orders').insert(data);
+      // 2️⃣ SIMPAN NOTIFICATION (REMINDER)
+      await Supabase.instance.client.from('notifications').insert({
+        'user_id': user.id,
+        'title': 'Pesanan Menunggu Pembayaran',
+        'body': 'Segera selesaikan pembayaran sebesar Rp$totalPrice',
+        'type': 'order_pending',
+        'payload': {'order_id': order['id'], 'total_price': totalPrice},
+      });
+
+      // 3️⃣ LOCAL NOTIFICATION
+      await NotificationService.showLocalNotification(
+        title: 'Pesanan Berhasil',
+        body: 'Total pembayaran Rp$totalPrice',
+        payload: {'type': 'order', 'order_id': order['id']},
+      );
 
       clearCart();
-
       Get.snackbar("Sukses", "Pesanan berhasil dibuat!");
     } catch (e) {
       Get.snackbar("Error", e.toString());

@@ -1,4 +1,7 @@
 // lib/main.dart
+import 'package:demo/data/services/notification_service.dart';
+import 'package:demo/firebase_options.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -16,8 +19,12 @@ import 'package:demo/orders/controllers/orders_controller.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
   // Load .env
   await dotenv.load(fileName: ".env");
+
+  await NotificationService.init();
 
   // Init Supabase
   await Supabase.initialize(

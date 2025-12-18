@@ -1,3 +1,5 @@
+import 'package:demo/core/widgets/dropdown_notification.dart';
+import 'package:demo/modules/home/controllers/notification_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -16,6 +18,7 @@ class HomeView extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeService = Get.find<ThemeService>();
     final authController = Get.find<AuthController>();
+    final notificationController = Get.put(NotificationController());
 
     // Catatan: Baris homeController dihapus karena tombol sekarang
     // langsung mengarah ke GpsLocationView tanpa perlu controller ini di sini.
@@ -26,15 +29,41 @@ class HomeView extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Miko Catering'),
         actions: [
+          Stack(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.notifications_outlined),
+                onPressed: () {
+                  notificationController.fetchNotifications();
+                  _showNotificationSheet(context);
+                },
+              ),
+              Obx(() {
+                final count = notificationController.unreadCount.value;
+                if (count == 0) return const SizedBox();
+
+                return Positioned(
+                  right: 8,
+                  top: 8,
+                  child: CircleAvatar(
+                    radius: 7,
+                    backgroundColor: Colors.red,
+                    child: Text(
+                      '$count',
+                      style: const TextStyle(fontSize: 10, color: Colors.white),
+                    ),
+                  ),
+                );
+              }),
+            ],
+          ),
           IconButton(
             icon: const Icon(Icons.brightness_6),
             onPressed: themeService.toggleTheme,
           ),
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () {
-              authController.logout();
-            },
+            onPressed: authController.logout,
           ),
         ],
       ),
@@ -170,4 +199,17 @@ class HomeView extends StatelessWidget {
       ),
     );
   }
+}
+
+void _showNotificationSheet(BuildContext context) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+    ),
+    builder: (_) {
+      return const NotificationSheet();
+    },
+  );
 }
