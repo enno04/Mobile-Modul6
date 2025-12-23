@@ -27,12 +27,22 @@ class NotificationController extends GetxController {
         .length;
   }
 
-  Future<void> markAsRead(String id) async {
-    await Supabase.instance.client
-        .from('notifications')
-        .update({'is_read': true})
-        .eq('id', id);
+  Future<void> markAllAsRead() async {
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user == null) return;
 
-    fetchNotifications();
+      // Update semua notifikasi milik user tersebut yang belum dibaca
+      await Supabase.instance.client
+          .from('notifications')
+          .update({'is_read': true})
+          .eq('user_id', user.id)
+          .eq('is_read', false);
+
+      // Refresh data lokal agar UI terupdate
+      fetchNotifications();
+    } catch (e) {
+      print("Error markAllAsRead: $e");
+    }
   }
 }

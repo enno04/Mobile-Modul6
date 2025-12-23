@@ -1,17 +1,25 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
-import '../models/menu_item_model.dart';
+import 'package:demo/data/models/MenuItems.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class MenuService {
-  final SupabaseClient _client = Supabase.instance.client;
+  static const String baseUrl = "https://fakerestaurantapi.runasp.net/api/Restaurant/items";
+  final http.Client client;
 
-  Future<List<MenuItem>> fetchMenuItems() async {
-    final response = await _client
-        .from('menu_items') // nama tabel di Supabase
-        .select()
-        .eq('is_active', true);
+  MenuService({http.Client? client}) : client = client ?? http.Client();
 
-    return (response as List)
-        .map((e) => MenuItem.fromMap(e as Map<String, dynamic>))
-        .toList();
+  Future<List<MenuItems>> fetchMenu() async {
+    try {
+      final response = await client.get(Uri.parse(baseUrl));
+
+      if (response.statusCode == 200) {
+        List jsonResponse = json.decode(response.body);
+        return MenuItems.fromJsonList(jsonResponse);
+      } else {
+        throw Exception("Gagal memuat data dari server");
+      }
+    } catch (e) {
+      throw Exception("Terjadi kesalahan: $e");
+    }
   }
 }
