@@ -2,7 +2,7 @@ class MenuItems {
   final int itemID;
   final String itemName;
   final String itemDescription;
-  final int itemPrice;
+  final num itemPrice;
   final String restaurantName;
   final int restaurantID;
   final String imageUrl;
