@@ -3,80 +3,122 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class NotificationSheet extends StatelessWidget {
-  const NotificationSheet({super.key});
+  final ScrollController scrollController;
+  const NotificationSheet({super.key, required this.scrollController});
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<NotificationController>();
 
-    return Padding(
-      padding: const EdgeInsets.all(16),
+    final notificationController = Get.find<NotificationController>();
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Notifikasi',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              IconButton(
-                icon: const Icon(Icons.close),
-                onPressed: () => Get.back(),
-              ),
-            ],
+
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 12),
+            height: 5, width: 40,
+            decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10)),
           ),
 
-          const SizedBox(height: 8),
-          const Divider(),
+          // Header
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text("Notifikasi", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                TextButton(
+                  onPressed: () => notificationController.markAllAsRead(),
+                  child: const Text("Tandai Dibaca", style: TextStyle(color: Colors.orange)),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
 
-          // Content
-          SizedBox(
-            height: MediaQuery.of(context).size.height * 0.5,
+          Expanded(
             child: Obx(() {
-              if (controller.notifications.isEmpty) {
-                return const Center(child: Text('Belum ada notifikasi'));
+              if (notificationController.notifications.isEmpty) {
+                return _buildEmptyState();
               }
 
               return ListView.separated(
-                itemCount: controller.notifications.length,
-                separatorBuilder: (_, __) => const Divider(),
-                itemBuilder: (_, index) {
-                  final n = controller.notifications[index];
-                  final isRead = n['is_read'] == true;
-
-                  return ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(
-                      n['title'],
-                      style: TextStyle(
-                        fontWeight: isRead
-                            ? FontWeight.normal
-                            : FontWeight.w600,
-                      ),
-                    ),
-                    subtitle: Text(
-                      n['body'],
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    onTap: () {
-                      controller.markAsRead(n['id']);
-                      Get.back();
-
-                      // contoh routing
-                      if (n['type'] == 'order_pending') {
-                        Get.toNamed('/order');
-                      }
-                    },
-                  );
+                controller: scrollController,
+                padding: const EdgeInsets.all(16),
+                itemCount: notificationController.notifications.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                itemBuilder: (context, index) {
+                  final notif = notificationController.notifications[index];
+                  return _buildNotificationItem(notif);
                 },
               );
             }),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNotificationItem(dynamic notif) {
+    bool isUnread = notif['is_read'] == false;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isUnread ? Colors.orange.withOpacity(0.05) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: isUnread ? Colors.orange.withOpacity(0.2) : Colors.grey.shade100),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Icon Indikator
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: isUnread ? Colors.orange : Colors.grey[200],
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              isUnread ? Icons.notifications_active : Icons.notifications_none,
+              size: 20, color: isUnread ? Colors.white : Colors.grey,
+            ),
+          ),
+          const SizedBox(width: 16),
+          // Konten Teks
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(notif['title'] ?? 'Info Catering',
+                    style: TextStyle(fontWeight: isUnread ? FontWeight.bold : FontWeight.normal, fontSize: 15)),
+                const SizedBox(height: 4),
+                Text(notif['body'] ?? '',
+                    style: TextStyle(color: Colors.grey[600], fontSize: 13, height: 1.4)),
+              ],
+            ),
+          ),
+          // Titik merah jika belum dibaca
+          if (isUnread)
+            const CircleAvatar(radius: 4, backgroundColor: Colors.orange),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.notifications_off_outlined, size: 60, color: Colors.grey[300]),
+          const SizedBox(height: 16),
+          const Text("Belum ada notifikasi", style: TextStyle(color: Colors.grey)),
         ],
       ),
     );

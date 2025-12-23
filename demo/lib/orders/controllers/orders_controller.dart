@@ -23,7 +23,7 @@ class OrdersController extends GetxController {
 
       final user = _client.auth.currentUser;
       if (user == null) {
-        errorMessage.value = 'Kamu belum login';
+        errorMessage.value = 'Silahkan login untuk melihat riwayat pesanan';
         return;
       }
 
@@ -33,17 +33,16 @@ class OrdersController extends GetxController {
           .eq('user_id', user.id)
           .order('created_at', ascending: false);
 
-      orders.value = (response as List)
-          .map((item) => Order.fromMap(item as Map<String, dynamic>))
-          .toList();
+      if (response != null) {
+        orders.assignAll((response as List)
+            .map((item) => Order.fromMap(item as Map<String, dynamic>))
+            .toList());
+      }
     } catch (e) {
-      errorMessage.value = 'Gagal memuat pesanan: $e';
+      errorMessage.value = 'Gagal memuat pesanan. Periksa koneksi internet Anda.';
+      print("Error Fetch Orders: $e");
     } finally {
       isLoading.value = false;
     }
-  }
-
-  Future<void> refreshOrders() async {
-    await fetchOrders();
   }
 }
