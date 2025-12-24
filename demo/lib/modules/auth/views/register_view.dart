@@ -2,20 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/auth_controller.dart';
 
-// PENTING: Import halaman Register yang baru dibuat
-import 'register_view.dart'; 
-
-class LoginView extends GetView<AuthController> {
-  const LoginView({super.key});
+class RegisterView extends GetView<AuthController> {
+  const RegisterView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Controller untuk teks input
+    // Kita gunakan controller text baru agar tidak bentrok dengan login
     final emailController = TextEditingController();
     final passwordController = TextEditingController();
 
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          onPressed: () => Get.back(), // Kembali ke halaman Login
+        ),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -23,32 +28,28 @@ class LoginView extends GetView<AuthController> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 60),
-                // Header / Logo Section
+                const SizedBox(height: 20),
+                // Header / Logo Section (Sama dengan Login)
                 Center(
                   child: Container(
-                    height: 120,
-                    width: 120,
+                    height: 100,
+                    width: 100,
                     decoration: BoxDecoration(
                       color: Colors.orange.shade50,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.restaurant_menu,
-                        size: 60, color: Colors.orange),
+                    child: const Icon(Icons.person_add_alt_1, size: 50, color: Colors.orange),
                   ),
                 ),
                 const SizedBox(height: 32),
 
-                // Welcome Text
+                // Title Text
                 const Text(
-                  'Miko Catering',
-                  style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87),
+                  'Buat Akun Baru',
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black87),
                 ),
                 const Text(
-                  'Silahkan login untuk mulai memesan',
+                  'Daftar untuk menikmati layanan Miko Catering',
                   style: TextStyle(fontSize: 16, color: Colors.grey),
                 ),
                 const SizedBox(height: 40),
@@ -77,7 +78,7 @@ class LoginView extends GetView<AuthController> {
                   decoration: InputDecoration(
                     hintText: 'Password',
                     prefixIcon: const Icon(Icons.lock_outline),
-                    suffixIcon: const Icon(Icons.visibility_off),
+                    suffixIcon: const Icon(Icons.visibility_off), // Bisa ditambahkan logic toggle visibility nanti
                     filled: true,
                     fillColor: Colors.grey.shade100,
                     border: OutlineInputBorder(
@@ -99,53 +100,48 @@ class LoginView extends GetView<AuthController> {
 
                 const SizedBox(height: 32),
 
-                // Login Button
+                // Register Button
                 SizedBox(
                   width: double.infinity,
                   height: 56,
                   child: ElevatedButton(
+                    // Panggil fungsi register dari controller
                     onPressed: controller.isLoading.value
                         ? null
-                        : () => controller.login(
-                            emailController.text, passwordController.text),
+                        : () => controller.register(emailController.text, passwordController.text),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.orange,
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       elevation: 0,
                     ),
                     child: controller.isLoading.value
                         ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text('Login',
-                            style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold)),
+                        : const Text('Daftar Sekarang', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   ),
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 24),
 
-                // Register Option (MODIFIKASI DI SINI)
+                // Back to Login Option
                 Center(
                   child: TextButton(
-                    // UBAH DARI: controller.register(...)
-                    // MENJADI: Navigasi ke halaman RegisterView
-                    onPressed: () => Get.to(() => const RegisterView()),
+                    onPressed: () => Get.back(), // Navigasi kembali ke Login
                     child: RichText(
                       text: const TextSpan(
-                        text: 'Belum punya akun? ',
+                        text: 'Sudah punya akun? ',
                         style: TextStyle(color: Colors.grey),
                         children: [
                           TextSpan(
-                            text: 'Daftar Sekarang',
-                            style:
-                                TextStyle(color: Colors.orange, fontWeight: FontWeight.bold),
+                            text: 'Login disini',
+                            style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold),
                           ),
                         ],
                       ),
                     ),
                   ),
                 ),
+                const SizedBox(height: 20),
               ],
             );
           }),
