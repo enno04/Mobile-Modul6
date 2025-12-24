@@ -75,7 +75,7 @@ class CartController extends GetxController {
   }
 
   // Menggunakan .fold untuk menghitung total lebih "clean"
-  int get totalPrice => cartItems.fold(0, (sum, item) => sum + (item.price * item.qty));
+  num get totalPrice => cartItems.fold(0, (sum, item) => sum + (item.price * item.qty));
 
   // --- LOGIKA CHECKOUT ---
 
